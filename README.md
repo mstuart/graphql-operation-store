@@ -5,6 +5,7 @@
 <p align="center"><strong>Framework-agnostic persisted query and trusted document store for GraphQL</strong></p>
 
 <p align="center">
+  <a href="https://github.com/mstuart/graphql-operation-store/actions/workflows/ci.yml"><img src="https://github.com/mstuart/graphql-operation-store/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://www.npmjs.com/package/graphql-operation-store"><img src="https://img.shields.io/npm/v/graphql-operation-store?label=npm" alt="npm"></a>
 </p>
 
