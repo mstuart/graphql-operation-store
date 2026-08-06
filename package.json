@@ -9,11 +9,11 @@
     "build": "tsc",
     "test": "node --experimental-strip-types --test tests/*.test.ts"
   },
-  "dependencies": {},
   "peerDependencies": {
     "graphql": ">=16.0.0"
   },
   "devDependencies": {
+    "@types/node": "^22.20.1",
     "graphql": "^16.9.0",
     "typescript": "^5.0.0"
   },
