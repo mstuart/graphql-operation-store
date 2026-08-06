@@ -1,5 +1,14 @@
-# graphql-operation-store
+<div align="center">
+  <img src="docs/assets/logo.svg" alt="graphql-operation-store — Framework-agnostic persisted query and trusted document store for GraphQL" width="720">
+</div>
 
+<p align="center"><strong>Framework-agnostic persisted query and trusted document store for GraphQL</strong></p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/graphql-operation-store"><img src="https://img.shields.io/npm/v/graphql-operation-store?label=npm" alt="npm"></a>
+</p>
+
+---
 Framework-agnostic Automatic Persisted Queries (APQ) and trusted document store for GraphQL servers.
 
 Extracts operations from client source at build time, validates incoming requests against a manifest at runtime. Works with any HTTP framework.
