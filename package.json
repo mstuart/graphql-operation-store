@@ -7,15 +7,19 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "test": "node --experimental-strip-types --test tests/*.test.ts"
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "check": "ultracite check",
+    "fix": "ultracite fix"
   },
   "peerDependencies": {
     "graphql": ">=16.0.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.6",
     "@types/node": "^22.20.1",
     "graphql": "^16.9.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "ultracite": "7.10.2"
   },
   "keywords": [
     "graphql",
