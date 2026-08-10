@@ -1,14 +1,14 @@
-export { OperationStore, createOperationStore, sha256 } from './store.js';
-export { MemoryStorage } from './storage/memory.js';
-export { FileStorage } from './storage/file.js';
-export { extractOperations } from './extractor.js';
+// biome-ignore-all lint/performance/noBarrelFile: This is the package's public API entry point.
+export type { ExtractOptions } from "./extractor.js";
+export { extractOperations } from "./extractor.js";
+export { operationStoreMiddleware as expressMiddleware } from "./middleware/express.js";
+export { operationStoreMiddleware as fetchMiddleware } from "./middleware/fetch.js";
+export { FileStorage } from "./storage/file.js";
+export { MemoryStorage } from "./storage/memory.js";
+export type { StoreOptions } from "./store.js";
+export { createOperationStore, OperationStore, sha256 } from "./store.js";
 export type {
-  OperationRecord,
   OperationManifest,
+  OperationRecord,
   Storage,
-} from './types.js';
-export type { StoreOptions } from './store.js';
-export type { ExtractOptions } from './extractor.js';
-
-export { operationStoreMiddleware as fetchMiddleware } from './middleware/fetch.js';
-export { operationStoreMiddleware as expressMiddleware } from './middleware/express.js';
+} from "./types.js";
