@@ -1,10 +1,12 @@
-import type { OperationStore } from '../store.js';
+import type { OperationStore } from "../store.js";
 
 export function operationStoreMiddleware(
   store: OperationStore
 ): (req: Request) => Promise<Request | Response> {
   return async (req: Request): Promise<Request | Response> => {
-    if (req.method !== 'POST') return req;
+    if (req.method !== "POST") {
+      return req;
+    }
 
     let body: Record<string, unknown>;
     try {
@@ -21,9 +23,9 @@ export function operationStoreMiddleware(
     if (!persistedQuery?.sha256Hash) {
       // No persisted query header — rebuild request with parsed body so downstream can use it
       return new Request(req.url, {
-        method: req.method,
-        headers: req.headers,
         body: JSON.stringify(body),
+        headers: req.headers,
+        method: req.method,
       });
     }
 
@@ -37,11 +39,11 @@ export function operationStoreMiddleware(
     if (!resolved) {
       return new Response(
         JSON.stringify({
-          errors: [{ message: 'PersistedQueryNotFound' }],
+          errors: [{ message: "PersistedQueryNotFound" }],
         }),
         {
+          headers: { "content-type": "application/json" },
           status: 400,
-          headers: { 'content-type': 'application/json' },
         }
       );
     }
@@ -49,9 +51,9 @@ export function operationStoreMiddleware(
     body.query = resolved;
 
     return new Request(req.url, {
-      method: req.method,
-      headers: req.headers,
       body: JSON.stringify(body),
+      headers: req.headers,
+      method: req.method,
     });
   };
 }

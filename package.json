@@ -2,17 +2,21 @@
   "name": "graphql-operation-store",
   "version": "0.1.0",
   "description": "Framework-agnostic persisted query and trusted document store for GraphQL",
+  "keywords": [
+    "graphql",
+    "persisted-queries",
+    "apq",
+    "trusted-documents"
+  ],
+  "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "test": "node --experimental-strip-types --test tests/*.test.ts",
     "check": "ultracite check",
-    "fix": "ultracite fix"
-  },
-  "peerDependencies": {
-    "graphql": ">=16.0.0"
+    "fix": "ultracite fix",
+    "test": "node --experimental-strip-types --test tests/*.test.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.6",
@@ -21,11 +25,7 @@
     "typescript": "^5.0.0",
     "ultracite": "7.10.2"
   },
-  "keywords": [
-    "graphql",
-    "persisted-queries",
-    "apq",
-    "trusted-documents"
-  ],
-  "license": "MIT"
+  "peerDependencies": {
+    "graphql": ">=16.0.0"
+  }
 }
