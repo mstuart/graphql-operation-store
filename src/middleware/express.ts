@@ -1,4 +1,4 @@
-import type { OperationStore } from '../store.js';
+import type { OperationStore } from "../store.js";
 
 interface ExpressRequest {
   body?: Record<string, unknown>;
@@ -6,19 +6,23 @@ interface ExpressRequest {
 }
 
 interface ExpressResponse {
-  status(code: number): ExpressResponse;
-  json(body: unknown): void;
+  json: (body: unknown) => void;
+  status: (code: number) => ExpressResponse;
 }
 
 type NextFunction = (err?: unknown) => void;
 
 export function operationStoreMiddleware(
   store: OperationStore
-): (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => Promise<void> {
+): (
+  req: ExpressRequest,
+  res: ExpressResponse,
+  next: NextFunction
+) => Promise<void> {
   return async (req, res, next) => {
     try {
-      const body = req.body;
-      if (!body || typeof body !== 'object') {
+      const { body } = req;
+      if (!body || typeof body !== "object") {
         next();
         return;
       }
@@ -43,7 +47,7 @@ export function operationStoreMiddleware(
 
       if (!resolved) {
         res.status(400).json({
-          errors: [{ message: 'PersistedQueryNotFound' }],
+          errors: [{ message: "PersistedQueryNotFound" }],
         });
         return;
       }
