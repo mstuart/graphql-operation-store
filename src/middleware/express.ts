@@ -40,10 +40,7 @@ export function operationStoreMiddleware(
       const hash = persistedQuery.sha256Hash;
       const query = body.query as string | undefined;
 
-      // If client sent query alongside hash in allow-unknown mode, resolve will register it
-      const resolved = query
-        ? await store.resolve(query)
-        : await store.resolve(hash);
+      const resolved = await store.resolvePersisted(hash, query);
 
       if (!resolved) {
         res.status(400).json({
