@@ -52,6 +52,51 @@ describe("OperationStore", () => {
     assert.equal(result, null);
   });
 
+  it("rejects a known hash paired with a different query in strict mode", async () => {
+    const storage = new MemoryStorage();
+    const storedQuery = "query { users { id } }";
+    const hash = sha256(storedQuery);
+    await storage.set(hash, storedQuery);
+
+    const store = createOperationStore({ mode: "strict", storage });
+    const result = await store.resolvePersisted(
+      hash,
+      "query { products { id } }"
+    );
+    assert.equal(result, null);
+  });
+
+  it("rejects a known hash paired with a different query in allow-unknown mode", async () => {
+    const storage = new MemoryStorage();
+    const storedQuery = "query { users { id } }";
+    const hash = sha256(storedQuery);
+    await storage.set(hash, storedQuery);
+
+    const store = createOperationStore({ mode: "allow-unknown", storage });
+    const result = await store.resolvePersisted(
+      hash,
+      "query { products { id } }"
+    );
+    assert.equal(result, null);
+  });
+
+  it("rejects a non-string query even when its hash is known", async () => {
+    const storage = new MemoryStorage();
+    const storedQuery = "query { users { id } }";
+    const hash = sha256(storedQuery);
+    await storage.set(hash, storedQuery);
+
+    const store = createOperationStore({ mode: "strict", storage });
+    let result: string | null | undefined;
+    await assert.doesNotReject(async () => {
+      result = await Reflect.apply(store.resolvePersisted, store, [
+        hash,
+        { operationName: "Users" },
+      ]);
+    });
+    assert.equal(result, null);
+  });
+
   it("allows unknown query in allow-unknown mode", async () => {
     const storage = new MemoryStorage();
     const store = createOperationStore({ mode: "allow-unknown", storage });
