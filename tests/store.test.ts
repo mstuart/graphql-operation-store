@@ -97,6 +97,25 @@ describe("OperationStore", () => {
     assert.equal(result, null);
   });
 
+  it("rejects a non-string persisted hash before storage lookup", async () => {
+    class StringAssumingStorage extends MemoryStorage {
+      override get(hash: string): Promise<string | null> {
+        hash.toLowerCase();
+        return super.get(hash);
+      }
+    }
+
+    const store = createOperationStore({
+      mode: "strict",
+      storage: new StringAssumingStorage(),
+    });
+    const result = await Reflect.apply(store.resolvePersisted, store, [
+      { digest: "invalid" },
+    ]);
+
+    assert.equal(result, null);
+  });
+
   it("allows unknown query in allow-unknown mode", async () => {
     const storage = new MemoryStorage();
     const store = createOperationStore({ mode: "allow-unknown", storage });

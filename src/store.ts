@@ -41,6 +41,10 @@ export class OperationStore {
   }
 
   async resolvePersisted(hash: string, query?: string): Promise<string | null> {
+    if (typeof hash !== "string") {
+      return null;
+    }
+
     if (query !== undefined && typeof query !== "string") {
       return null;
     }

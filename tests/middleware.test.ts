@@ -10,6 +10,16 @@ function sha256(input: string): string {
   return createHash("sha256").update(input).digest("hex");
 }
 
+class StringAssumingStorage extends MemoryStorage {
+  getCallCount = 0;
+
+  override get(hash: string): Promise<string | null> {
+    this.getCallCount += 1;
+    hash.toLowerCase();
+    return super.get(hash);
+  }
+}
+
 describe("fetch middleware", () => {
   it("passes through non-POST requests", async () => {
     const storage = new MemoryStorage();
@@ -107,6 +117,21 @@ describe("fetch middleware", () => {
     assert.ok(result instanceof Request);
   });
 
+  it("passes through a JSON null body", async () => {
+    const storage = new MemoryStorage();
+    const store = createOperationStore({ mode: "strict", storage });
+    const mw = operationStoreMiddleware(store);
+    const req = new Request("http://localhost/graphql", {
+      body: "null",
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    });
+
+    const result = await mw(req);
+    assert.ok(result instanceof Request);
+    assert.equal(await result.json(), null);
+  });
+
   it("resolves query alongside hash in allow-unknown mode", async () => {
     const storage = new MemoryStorage();
     const store = createOperationStore({ mode: "allow-unknown", storage });
@@ -200,6 +225,28 @@ describe("fetch middleware", () => {
       errors: [{ message: "PersistedQueryNotFound" }],
     });
   });
+
+  for (const hash of [null, 0, false]) {
+    it(`returns 400 for present non-string hash ${JSON.stringify(hash)}`, async () => {
+      const storage = new StringAssumingStorage();
+      const store = createOperationStore({ mode: "strict", storage });
+      const mw = operationStoreMiddleware(store);
+      const req = new Request("http://localhost/graphql", {
+        body: JSON.stringify({
+          extensions: {
+            persistedQuery: { sha256Hash: hash, version: 1 },
+          },
+        }),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      });
+
+      const result = await mw(req);
+      assert.ok(result instanceof Response);
+      assert.equal(result.status, 400);
+      assert.equal(storage.getCallCount, 0);
+    });
+  }
 });
 
 describe("express middleware", () => {
@@ -298,4 +345,43 @@ describe("express middleware", () => {
     });
     assert.equal(nextError, undefined);
   });
+
+  for (const hash of [null, 0, false]) {
+    it(`returns 400 for present non-string hash ${JSON.stringify(hash)}`, async () => {
+      const storage = new StringAssumingStorage();
+      const store = createOperationStore({ mode: "strict", storage });
+      const middleware = expressOperationStoreMiddleware(store);
+      let nextCalled = false;
+      let responseStatus: number | undefined;
+      interface ExpressResponse {
+        json: (_body: unknown) => void;
+        status: (code: number) => ExpressResponse;
+      }
+      const response: ExpressResponse = {
+        json: () => undefined,
+        status: (code) => {
+          responseStatus = code;
+          return response;
+        },
+      };
+
+      await middleware(
+        {
+          body: {
+            extensions: {
+              persistedQuery: { sha256Hash: hash, version: 1 },
+            },
+          },
+        },
+        response,
+        () => {
+          nextCalled = true;
+        }
+      );
+
+      assert.equal(responseStatus, 400);
+      assert.equal(storage.getCallCount, 0);
+      assert.equal(nextCalled, false);
+    });
+  }
 });
