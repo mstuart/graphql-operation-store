@@ -32,9 +32,7 @@ export function operationStoreMiddleware(
     const hash = persistedQuery.sha256Hash;
     const query = body.query as string | undefined;
 
-    const resolved = query
-      ? await store.resolve(query)
-      : await store.resolve(hash);
+    const resolved = await store.resolvePersisted(hash, query);
 
     if (!resolved) {
       return new Response(
