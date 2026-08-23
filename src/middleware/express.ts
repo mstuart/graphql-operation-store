@@ -28,11 +28,11 @@ export function operationStoreMiddleware(
       }
 
       const extensions = body.extensions as
-        | { persistedQuery?: { version?: number; sha256Hash?: string } }
+        | { persistedQuery?: { version?: number; sha256Hash?: unknown } }
         | undefined;
 
       const persistedQuery = extensions?.persistedQuery;
-      if (!persistedQuery?.sha256Hash) {
+      if (!(persistedQuery && Object.hasOwn(persistedQuery, "sha256Hash"))) {
         next();
         return;
       }
@@ -40,7 +40,10 @@ export function operationStoreMiddleware(
       const hash = persistedQuery.sha256Hash;
       const query = body.query as string | undefined;
 
-      const resolved = await store.resolvePersisted(hash, query);
+      const resolved =
+        typeof hash === "string"
+          ? await store.resolvePersisted(hash, query)
+          : null;
 
       if (!resolved) {
         res.status(400).json({

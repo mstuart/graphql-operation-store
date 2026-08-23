@@ -8,19 +8,27 @@ export function operationStoreMiddleware(
       return req;
     }
 
-    let body: Record<string, unknown>;
+    let body: Record<string, unknown> | null;
     try {
-      body = (await req.json()) as Record<string, unknown>;
+      body = (await req.json()) as Record<string, unknown> | null;
     } catch {
       return req;
     }
 
+    if (body === null) {
+      return new Request(req.url, {
+        body: JSON.stringify(body),
+        headers: req.headers,
+        method: req.method,
+      });
+    }
+
     const extensions = body.extensions as
-      | { persistedQuery?: { version?: number; sha256Hash?: string } }
+      | { persistedQuery?: { version?: number; sha256Hash?: unknown } }
       | undefined;
 
     const persistedQuery = extensions?.persistedQuery;
-    if (!persistedQuery?.sha256Hash) {
+    if (!(persistedQuery && Object.hasOwn(persistedQuery, "sha256Hash"))) {
       // No persisted query header — rebuild request with parsed body so downstream can use it
       return new Request(req.url, {
         body: JSON.stringify(body),
@@ -32,7 +40,10 @@ export function operationStoreMiddleware(
     const hash = persistedQuery.sha256Hash;
     const query = body.query as string | undefined;
 
-    const resolved = await store.resolvePersisted(hash, query);
+    const resolved =
+      typeof hash === "string"
+        ? await store.resolvePersisted(hash, query)
+        : null;
 
     if (!resolved) {
       return new Response(
