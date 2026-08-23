@@ -39,6 +39,28 @@ export class OperationStore {
     // strict mode: unknown hash → null
     return null;
   }
+
+  async resolvePersisted(hash: string, query?: string): Promise<string | null> {
+    if (query !== undefined && typeof query !== "string") {
+      return null;
+    }
+
+    if (query !== undefined && sha256(query) !== hash) {
+      return null;
+    }
+
+    const stored = await this.storage.get(hash);
+    if (stored) {
+      return stored;
+    }
+
+    if (this.mode !== "allow-unknown" || query === undefined) {
+      return null;
+    }
+
+    await this.storage.set(hash, query);
+    return query;
+  }
 }
 
 export function createOperationStore(opts: StoreOptions): OperationStore {
