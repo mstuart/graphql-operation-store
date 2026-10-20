@@ -10,17 +10,13 @@ export function operationStoreMiddleware(
 
     let body: Record<string, unknown> | null;
     try {
-      body = (await req.json()) as Record<string, unknown> | null;
+      body = (await req.clone().json()) as Record<string, unknown> | null;
     } catch {
       return req;
     }
 
     if (body === null) {
-      return new Request(req.url, {
-        body: JSON.stringify(body),
-        headers: req.headers,
-        method: req.method,
-      });
+      return req;
     }
 
     const extensions = body.extensions as
@@ -29,12 +25,8 @@ export function operationStoreMiddleware(
 
     const persistedQuery = extensions?.persistedQuery;
     if (!(persistedQuery && Object.hasOwn(persistedQuery, "sha256Hash"))) {
-      // No persisted query header — rebuild request with parsed body so downstream can use it
-      return new Request(req.url, {
-        body: JSON.stringify(body),
-        headers: req.headers,
-        method: req.method,
-      });
+      // Preserve the original body for downstream when no persisted query is present.
+      return req;
     }
 
     const hash = persistedQuery.sha256Hash;
@@ -59,10 +51,13 @@ export function operationStoreMiddleware(
 
     body.query = resolved;
 
-    return new Request(req.url, {
+    const headers = new Headers(req.headers);
+    headers.delete("content-length");
+    return new Request(req, {
       body: JSON.stringify(body),
-      headers: req.headers,
-      method: req.method,
+      headers,
+      referrer: req.referrer,
+      referrerPolicy: req.referrerPolicy,
     });
   };
 }
