@@ -19,7 +19,11 @@ export class FileStorage implements Storage {
       return;
     }
     this.loadPromise = this.load();
-    await this.loadPromise;
+    try {
+      await this.loadPromise;
+    } finally {
+      this.loadPromise = null;
+    }
   }
 
   private async load(): Promise<void> {
